@@ -7,6 +7,8 @@ and coordinates the redraw cycle.
 
 from __future__ import annotations
 
+from typing import Optional
+
 from cmu_graphics import rgb  # type: ignore[attr-defined]
 
 from . import model
@@ -15,7 +17,7 @@ from . import model
 def app_started(app) -> None:
     """Initialises global app data and shared layout constants."""
     app.state = model.create_initial_state()
-    app.cache = {}
+    app.cache = {"buttons": {}}
 
     app.layout = {
         "graph": (80, 120, int(app.width * 0.6), int(app.height * 0.72)),
@@ -50,6 +52,19 @@ def key_pressed(app, event) -> None:
     key = event.key
     state = app.state
 
+    if state.input_stage != "idle":
+        if key == "enter":
+            model.submit_input(state)
+        elif key == "backspace":
+            model.backspace_input(state)
+        elif key == "escape":
+            model.cancel_input(state)
+        else:
+            char = _key_to_char(key)
+            if char:
+                model.append_input_character(state, char)
+        return
+
     if key in ("left", "a"):
         model.cycle_function(state, -1)
     elif key in ("right", "d"):
@@ -72,6 +87,18 @@ def key_pressed(app, event) -> None:
         model.adjust_slice_count(state, -2)
     elif key == "space":
         model.toggle_animation(state)
+    elif key.lower() == "n":
+        model.begin_custom_function_entry(state)
+    elif key.lower() == "v":
+        model.start_video_playback(state)
+    elif key.lower() == "a":
+        model.run_adaptive_refinement(state)
+    elif key.lower() == "g":
+        model.apply_adaptive_slice_recommendation(state)
+    elif key.lower() == "t":
+        model.cycle_adaptive_tolerance(state)
+    elif key == "3":
+        model.toggle_display_mode(state)
     elif key == "r":
         model.reset_state(state)
     elif key == "p":
@@ -86,25 +113,51 @@ def mouse_pressed(app, event) -> None:
     """
 
     graph_left, graph_top, graph_width, graph_height = app.layout["graph"]
+    state = app.state
+
+    if state.input_stage != "idle":
+        return
+
+    button_hit = _button_hit(app, event.x, event.y)
+    if button_hit == "play":
+        model.start_video_playback(state)
+        return
+    if button_hit == "toggle3d":
+        model.toggle_display_mode(state)
+        return
+    if button_hit == "addFunction":
+        model.begin_custom_function_entry(state)
+        return
+    if button_hit == "adaptive":
+        model.run_adaptive_refinement(state)
+        return
+    if button_hit == "tolerance":
+        model.cycle_adaptive_tolerance(state)
+        return
+    if button_hit == "applySlices":
+        model.apply_adaptive_slice_recommendation(state)
+        return
+
     if (
         graph_left <= event.x <= graph_left + graph_width
         and graph_top <= event.y <= graph_top + graph_height
     ):
         focus_index = _index_for_x(app, event.x)
         if focus_index is not None:
-            state = app.state
             # jump rotation directly to the clicked slice
             step_fraction = focus_index / max(1, state.slice_count)
             state.rotation_angle = step_fraction * 360
             state.is_animating = True
     else:
-        model.toggle_animation(app.state)
+        model.toggle_animation(state)
 
 
 def timer_fired(app) -> None:
     """Keeps the animation advancing smoothly."""
 
-    model.tick_animation(app.state)
+    state = app.state
+    speed = 5.0 if state.play_mode == "video" else 4.0
+    model.tick_animation(state, degrees_per_tick=speed)
 
 
 def redraw_all(app) -> None:
@@ -112,6 +165,7 @@ def redraw_all(app) -> None:
 
     from . import view
 
+    app.cache.setdefault("buttons", {})
     view.redraw_all(app)
 
 
@@ -125,5 +179,36 @@ def _index_for_x(app, x_pixel: float):
     if not 0 <= relative <= 1:
         return None
     return min(state.slice_count - 1, max(0, int(relative * state.slice_count)))
+
+
+def _key_to_char(key: str) -> Optional[str]:
+    """Map cmu_graphics key strings to the characters we allow in text input."""
+
+    if len(key) == 1:
+        return key
+    mapping = {
+        "space": " ",
+        "minus": "-",
+        "equal": "=",
+        "slash": "/",
+        "period": ".",
+        "comma": ",",
+        "apostrophe": "'",
+        "semicolon": ";",
+        "leftBracket": "[",
+        "rightBracket": "]",
+        "backslash": "\\",
+    }
+    return mapping.get(key)
+
+
+def _button_hit(app, x: float, y: float) -> Optional[str]:
+    """Return the identifier of the button under the cursor, if any."""
+
+    buttons = app.cache.get("buttons", {})
+    for name, (bx, by, bw, bh) in buttons.items():
+        if bx <= x <= bx + bw and by <= y <= by + bh:
+            return name
+    return None
 
 
