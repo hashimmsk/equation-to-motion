@@ -21,7 +21,7 @@ This codebase only contains the MVP deliverable plus the TP1 design documentatio
    ```
 3. Launch the MVP application:
    ```
-   python mvp_app.py
+   python main.py
    ```
 
 Controls inside the app:
@@ -52,7 +52,7 @@ This MVP bridges the gap by combining the immediacy of Desmos with the conceptua
 - **Model (`mvp/model.py`)**: encapsulates application state, selectable functions, integration bounds, slice counts, and disk-method computations.
 - **View (`mvp/view.py`)**: renders axes, function graphs, slice approximations, and explanatory panels using cmu_graphics drawing primitives.
 - **Controller (`mvp/controller.py`)**: translates keyboard/mouse input and timer events into model updates, ensuring the view redraws cleanly.
-- **Entry Point (`mvp_app.py`)**: wires cmu_graphics callbacks to the controller and launches the event loop.
+- **Entry Point (`main.py`)**: wires cmu_graphics callbacks to the controller and launches the event loop.
 
 ### Algorithmic Plan
 The main algorithmic component is a **midpoint Riemann sum** that approximates \( V = \int_a^b \pi [f(x)]^2 dx \) for solids of revolution about the x-axis.  
