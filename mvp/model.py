@@ -855,5 +855,3 @@ def _clear_adaptive_cache(state: AppState, keep_message: bool = False) -> None:
     state.adaptive_recommended_slices = None
     if not keep_message:
         state.message = "Adaptive cache cleared."
-
-

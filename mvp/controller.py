@@ -152,6 +152,21 @@ def mouse_pressed(app, event) -> None:
         model.toggle_animation(state)
 
 
+def on_mouse_drag(app, mouseX: float, mouseY: float) -> None:
+    """Currently a no-op placeholder to satisfy cmu_graphics' drag hook."""
+
+    # Drag-based domain adjustments were removed for TP2 polish, but the main
+    # module still wires up onMouseDrag. Having this stub prevents attribute
+    # errors when cmu_graphics emits drag events.
+    _ = (app, mouseX, mouseY)
+
+
+def on_mouse_release(app, event) -> None:
+    """No-op placeholder to keep the release hook balanced with on_mouse_drag."""
+
+    _ = (app, event)
+
+
 def timer_fired(app) -> None:
     """Keeps the animation advancing smoothly."""
 
@@ -210,5 +225,3 @@ def _button_hit(app, x: float, y: float) -> Optional[str]:
         if bx <= x <= bx + bw and by <= y <= by + bh:
             return name
     return None
-
-

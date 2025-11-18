@@ -554,5 +554,3 @@ def draw_adaptive_intervals(app, overlay_only: bool = False) -> None:
             fill=color,
             lineWidth=1,
         )
-
-
