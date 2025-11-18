@@ -36,6 +36,7 @@ Controls inside the app:
 - `N`: start typing your own function (`sin`, `cos`, `exp`, `sqrt`, …)
 - `3`: toggle the 3D surface preview
 - `Esc`: cancel custom-function entry
+- `S`: toggle between disk and shell (y-axis) methods
 
 ---
 
@@ -66,6 +67,8 @@ Implementation details:
 - Maintain a lightweight animation index derived from a rotation angle; this connects the numerical approximation to the highlighted slice for conceptual reinforcement.
 - Safely parse user-defined expressions with Python’s `ast` module, allowing standard math functions while rejecting unsafe constructs.
 - Provide an **adaptive Simpson’s rule** refinement that recursively subdivides the domain until an error tolerance is met, returning both an accurate volume estimate and the subintervals that required higher resolution.
+- Compare **midpoint, trapezoidal, Simpson, and adaptive** volumes to highlight numerical accuracy trade-offs, and visualise convergence behaviour as slices increase.
+- Weight slice placement with a derivative-based heuristic so regions with rapid change receive more sampling density.
 
 ### Timeline Plan
 - **Week 10:** Finalize function library, MVC scaffolding, and data flow (DONE).
@@ -82,7 +85,9 @@ The MVP now includes the improvements required for TP2:
 
 - **Custom functions:** press `N` (or click the sidebar button) to type any expression using `sin`, `cos`, `exp`, `sqrt`, etc. The model validates and compiles the expression safely with `ast`, then adds it to the function list with user‑specified bounds.
 - **Video-style playback:** press `V` or “Play video” to run a single 360° rotation that stops automatically at the end—useful for demonstrations without manual timing.
-- **Adaptive integration:** press `A` (or click “Adaptive refine”) to run adaptive Simpson’s rule. The control panel shows the refined volume, the absolute error versus the manual Riemann sum, and the recommended slice count; the adaptive intervals are drawn over the 2D plot. Press `T` to cycle the tolerance and `G` to adopt the suggested slices.
+- **Adaptive integration:** press `A` (or click “Adaptive refine”) to run adaptive Simpson’s rule. The control panel shows the refined volume, the absolute error versus the manual Riemann sum, and the recommended slice count; the adaptive intervals are drawn over the 2D plot. Press `T` to cycle the tolerance, `G` to adopt the suggested slices, and `S` to toggle between disk and shell methods.
+- **Numerical insights:** the info panel now summarises midpoint, trapezoid, Simpson, and adaptive volumes, relative errors, and convergence trends; error bars beside the graph reflect the manual vs. adaptive discrepancy.
+- **UI polish and education:** draggable domain handles, a refreshed palette, 3D shading, and context-sensitive tips help students connect algorithmic behaviour (errors, slice density, method choice) with visual outcomes.
 - **3D surface preview:** press `3` (or the “3D preview” button) to render a pseudo-isometric surface of revolution above the 2D slice view. The highlight follows the active slice so the animation tells a consistent story in both projections.
 - **UI polish:** a status ribbon summarises key shortcuts, the sidebar now has in-app buttons, and a message bar at the bottom communicates parsing errors or workflow hints while remaining within the MVC structure.
 
