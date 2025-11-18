@@ -30,8 +30,12 @@ Controls inside the app:
 - `[` and `]`: adjust the integration bounds
 - `+ / -` or `↑ / ↓`: tune the number of slices in the Riemann sum
 - `Space`: toggle the rotation highlight animation
+- `V`: play a single 360° “video” rotation
 - `R`: reset the current function to its suggested domain
 - `Click` inside the plot: focus the rotation on a particular slice
+- `N`: start typing your own function (`sin`, `cos`, `exp`, `sqrt`, …)
+- `3`: toggle the 3D surface preview
+- `Esc`: cancel custom-function entry
 
 ---
 
@@ -50,8 +54,8 @@ This MVP bridges the gap by combining the immediacy of Desmos with the conceptua
 
 ### Structural Plan (MVC Overview)
 - **Model (`mvp/model.py`)**: encapsulates application state, selectable functions, integration bounds, slice counts, and disk-method computations.
-- **View (`mvp/view.py`)**: renders axes, function graphs, slice approximations, and explanatory panels using cmu_graphics drawing primitives.
-- **Controller (`mvp/controller.py`)**: translates keyboard/mouse input and timer events into model updates, ensuring the view redraws cleanly.
+- **View (`mvp/view.py`)**: renders axes, the 2D slice view, an optional 3D surface preview, input overlays, and sidebar controls using `cmu_graphics` drawing primitives.
+- **Controller (`mvp/controller.py`)**: translates keyboard/mouse input (including text entry) into model updates, ensuring the view redraws cleanly.
 - **Entry Point (`main.py`)**: wires cmu_graphics callbacks to the controller and launches the event loop.
 
 ### Algorithmic Plan
@@ -60,6 +64,8 @@ Implementation details:
 - Sample the function at slice midpoints, guaranteeing stability for non-negative functions.
 - Recompute the volume whenever the user changes the function, domain, or slice count.
 - Maintain a lightweight animation index derived from a rotation angle; this connects the numerical approximation to the highlighted slice for conceptual reinforcement.
+- Safely parse user-defined expressions with Python’s `ast` module, allowing standard math functions while rejecting unsafe constructs.
+- Provide an **adaptive Simpson’s rule** refinement that recursively subdivides the domain until an error tolerance is met, returning both an accurate volume estimate and the subintervals that required higher resolution.
 
 ### Timeline Plan
 - **Week 10:** Finalize function library, MVC scaffolding, and data flow (DONE).
@@ -72,7 +78,13 @@ Implementation details:
 ---
 
 ## TP2 Update
-Pending — will document structural refinements or design changes once TP1 feedback is received and processed.
+The MVP now includes the improvements required for TP2:
+
+- **Custom functions:** press `N` (or click the sidebar button) to type any expression using `sin`, `cos`, `exp`, `sqrt`, etc. The model validates and compiles the expression safely with `ast`, then adds it to the function list with user‑specified bounds.
+- **Video-style playback:** press `V` or “Play video” to run a single 360° rotation that stops automatically at the end—useful for demonstrations without manual timing.
+- **Adaptive integration:** press `A` (or click “Adaptive refine”) to run adaptive Simpson’s rule. The control panel shows the refined volume, the absolute error versus the manual Riemann sum, and the recommended slice count; the adaptive intervals are drawn over the 2D plot. Press `T` to cycle the tolerance and `G` to adopt the suggested slices.
+- **3D surface preview:** press `3` (or the “3D preview” button) to render a pseudo-isometric surface of revolution above the 2D slice view. The highlight follows the active slice so the animation tells a consistent story in both projections.
+- **UI polish:** a status ribbon summarises key shortcuts, the sidebar now has in-app buttons, and a message bar at the bottom communicates parsing errors or workflow hints while remaining within the MVC structure.
 
 ---
 
