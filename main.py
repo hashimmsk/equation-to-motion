@@ -20,6 +20,13 @@ def onMousePress(app, mouseX, mouseY):
     event = SimpleNamespace(x=mouseX, y=mouseY)
     controller.mouse_pressed(app, event)
 
+def onMouseDrag(app, mouseX, mouseY):
+    controller.on_mouse_drag(app, mouseX, mouseY)
+
+def onMouseRelease(app, mouseX, mouseY):
+    event = SimpleNamespace(x=mouseX, y=mouseY)
+    controller.on_mouse_release(app, event)
+
 def onStep(app):
     controller.timer_fired(app)
 
