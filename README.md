@@ -8,10 +8,6 @@ This repository now hosts an **interactive solids of revolution visualizer** tha
 - Structured using the **Model–View–Controller (MVC)** pattern
 - Runs locally with no external APIs, hardware, or disallowed frameworks
 
-This codebase only contains the MVP deliverable plus the TP1 design documentation. All post-MVP experiments and external-module pipelines have been removed for now and can be restored later as needed.
-
----
-
 ## How to Run
 
 1. Create a fresh virtual environment (optional but recommended).
