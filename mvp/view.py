@@ -1,16 +1,15 @@
 """
 View layer for the cmu_graphics MVP.
-
 All drawing logic and coordinate transforms live in this module.
 The controller calls `redraw_all` from the main `redrawAll` handler.
+
 """
 
 from __future__ import annotations
-
 from typing import Iterable, List, Tuple
 import math
 
-from cmu_graphics import (  # type: ignore[attr-defined]
+from cmu_graphics import (
     drawLine,
     drawLabel,
     drawPolygon,
@@ -19,7 +18,6 @@ from cmu_graphics import (  # type: ignore[attr-defined]
 )
 
 from . import model
-
 
 def redraw_all(app) -> None:
     """Entry point used by the controller."""
@@ -43,12 +41,6 @@ def redraw_all(app) -> None:
     if app.state.input_stage != "idle":
         draw_input_overlay(app)
 
-
-# ---------------------------------------------------------------------------
-# Core panels
-# ---------------------------------------------------------------------------
-
-
 def draw_background(app) -> None:
     drawRect(0, 0, app.width, app.height, fill=app.colors["background"])
 
@@ -71,7 +63,6 @@ def draw_background(app) -> None:
         fill=app.colors["panel"],
         border=app.colors["panelBorder"],
     )
-
 
 def draw_plot(app) -> None:
     state = app.state
@@ -106,7 +97,7 @@ def draw_plot(app) -> None:
     if state.show_3d and radius_max > 0:
         try:
             draw_surface_mesh(app, points, radius_max)
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             state.show_3d = False
             state.message = f"3D preview unavailable: {exc}"
             draw_slices(app)
@@ -116,9 +107,7 @@ def draw_plot(app) -> None:
             draw_adaptive_intervals(app)
 
     if state.show_3d and state.adaptive_intervals:
-        # Also overlay adaptive intervals in 3D mode for reference
         draw_adaptive_intervals(app, overlay_only=True)
-
 
 def draw_axes(app, y_min: float, y_max: float) -> None:
     state = app.state
@@ -147,7 +136,6 @@ def draw_axes(app, y_min: float, y_max: float) -> None:
         sx1, _ = to_screen(app, (state.domain_end, y))
         drawLine(sx0 - 6, sy, sx0, sy, fill=app.colors["axis"])
         drawLabel(f"{y:.2f}", sx0 - 28, sy + 2, size=10, fill=app.colors["axisSubtle"])
-
 
 def draw_slices(app) -> None:
     state = app.state
@@ -196,7 +184,6 @@ def draw_slices(app) -> None:
             border=border,
             opacity=65 if index == highlight_index else 40,
         )
-
 
 def draw_surface_mesh(app, points: List[Tuple[float, float]], radius_max: float) -> None:
     state = app.state
@@ -273,9 +260,7 @@ def draw_surface_mesh(app, points: List[Tuple[float, float]], radius_max: float)
             opacity=opacity,
         )
 
-    # Re-draw the axis on top for clarity
     draw_axes(app, y_min, y_max)
-
 
 def draw_ribbon(app) -> None:
     ribbon_left, ribbon_top, ribbon_width, ribbon_height = app.layout["ribbon"]
@@ -298,7 +283,6 @@ def draw_ribbon(app) -> None:
         fill=app.colors["ribbonText"],
     )
 
-
 def draw_sidebar(app) -> None:
     state = app.state
     sidebar_left, sidebar_top, sidebar_width, sidebar_height = app.layout["sidebar"]
@@ -312,11 +296,10 @@ def draw_sidebar(app) -> None:
         bold=True,
     )
 
-    # Buttons
     button_width = sidebar_width - 48
-    button_height = 34
-    button_y = sidebar_top + 60
-    spacing = 12
+    button_height = 30
+    button_y = sidebar_top + 54
+    spacing = 6
     button_specs = [
         ("play", "Play video (V)"),
         ("toggle3d", f"3D preview: {'On' if state.show_3d else 'Off'} (3)"),
@@ -339,56 +322,64 @@ def draw_sidebar(app) -> None:
         )
 
     active_fn = model.active_function(state)
-    info_top = button_y + len(button_specs) * (button_height + spacing) + 20
-    info_lines = [
-        ("Function", active_fn.name),
-        ("Expression", active_fn.expression),
-        ("Domain", f"[{state.domain_start:.2f}, {state.domain_end:.2f}]"),
-        ("Slices", f"{state.slice_count}"),
-        ("Volume (approx)", f"{state.approx_volume:.4f} units³"),
-        (
-            "Playback",
-            "Video" if state.play_mode == "video" else ("Looping" if state.is_animating else "Paused"),
-        ),
-        (
-            "Adaptive volume",
-            "—" if state.adaptive_volume is None else f"{state.adaptive_volume:.5f} units³",
-        ),
-        (
-            "Adaptive error",
-            "—" if state.adaptive_error is None else f"{state.adaptive_error:.5g}",
-        ),
-        (
-            "Suggested slices",
-            "—" if state.adaptive_recommended_slices is None else f"{state.adaptive_recommended_slices}",
-        ),
-        ("Input stage", state.input_stage),
-    ]
+    info_left = sidebar_left + 24
+    info_width = sidebar_width - 48
+    info_top = button_y + len(button_specs) * (button_height + spacing) + 24
 
-    for i, (label, value) in enumerate(info_lines):
-        y = info_top + i * 46
-        drawLabel(label, sidebar_left + 24, y, align="left", size=14, fill=app.colors["sidebarLabel"], bold=True)
-        drawLabel(value, sidebar_left + 24, y + 20, align="left", size=14, fill=app.colors["sidebarValue"])
-
-    footer_top = sidebar_top + sidebar_height - 110
+    drawRect(
+        info_left - 10,
+        info_top - 14,
+        info_width + 20,
+        sidebar_height - (info_top - sidebar_top) - 20,
+        fill=app.colors["panel"],
+        border=app.colors["panelBorder"],
+        opacity=30,
+    )
     drawLabel(
-        "MVC Reminder",
-        sidebar_left + sidebar_width / 2,
-        footer_top,
-        size=16,
+        "Current setup",
+        info_left,
+        info_top,
+        align="left",
+        size=15,
         fill=app.colors["sidebarHeading"],
         bold=True,
     )
-    drawLabel(
-        "Model: state + math\nView: drawing routines\nController: events",
-        sidebar_left + sidebar_width / 2,
-        footer_top + 52,
-        size=12,
-        fill=app.colors["sidebarValue"],
-        align="center",
+    info_top += 22
+    info_top = _draw_info_pairs(
+        app,
+        [
+            ("Function", active_fn.name),
+            ("Expression", active_fn.expression),
+            ("Domain", f"[{state.domain_start:.2f}, {state.domain_end:.2f}]"),
+            ("Slices", f"{state.slice_count}"),
+            ("Volume (approx)", f"{state.approx_volume:.4f} units³"),
+            (
+                "Playback mode",
+                "Video"
+                if state.play_mode == "video"
+                else ("Looping" if state.is_animating else "Paused"),
+            ),
+        ],
+        info_left,
+        info_top,
+        info_width,
+        row_height=24,
     )
-
-
+    drawLine(
+        info_left,
+        sidebar_top + sidebar_height - 24,
+        info_left + info_width,
+        sidebar_top + sidebar_height - 24,
+        fill=app.colors["panelBorder"],
+    )
+    drawLabel(
+        "Stay curious—experiment with tolerances!",
+        info_left + info_width / 2,
+        sidebar_top + sidebar_height - 10,
+        align="center",
+        size=11,
+        fill=app.colors["sidebarLabel"],
+    )
 def draw_status_bar(app) -> None:
     state = app.state
     bar_height = 36
@@ -408,7 +399,6 @@ def draw_status_bar(app) -> None:
         size=14,
         fill=app.colors["sidebarValue"],
     )
-
 
 def draw_input_overlay(app) -> None:
     state = app.state
@@ -455,17 +445,41 @@ def draw_input_overlay(app) -> None:
         fill=app.colors["axisSubtle"],
     )
 
-
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
-
 def draw_button(app, name: str, label: str, x: float, y: float, width: float, height: float) -> None:
     drawRect(x, y, width, height, fill=app.colors["canvas"], border=app.colors["panelBorder"])
     drawLabel(label, x + width / 2, y + height / 2, align="center", size=13, fill=app.colors["sidebarHeading"])
     app.cache["buttons"][name] = (x, y, width, height)
 
+def _draw_info_pairs(
+    app,
+    pairs: List[Tuple[str, str]],
+    left: float,
+    top: float,
+    width: float,
+    row_height: float = 26,
+) -> float:
+    """Utility to render label/value lines that stay neatly aligned."""
+
+    y = top
+    for label, value in pairs:
+        drawLabel(
+            label,
+            left,
+            y,
+            align="left",
+            size=12,
+            fill=app.colors["sidebarLabel"],
+        )
+        drawLabel(
+            value,
+            left + width,
+            y,
+            align="right",
+            size=12,
+            fill=app.colors["sidebarValue"],
+        )
+        y += row_height
+    return y
 
 def compute_vertical_bounds(points: Iterable[Tuple[float, float]], radius_padding: float) -> Tuple[float, float]:
     """Expands the raw min/max slightly to keep the graph readable."""
@@ -483,7 +497,6 @@ def compute_vertical_bounds(points: Iterable[Tuple[float, float]], radius_paddin
         return (y_min - padding, y_max + padding)
     padding = 0.12 * (y_max - y_min)
     return (y_min - padding, y_max + padding)
-
 
 def to_screen(app, point: Tuple[float, float]) -> Tuple[float, float]:
     """Transforms (x, y) coordinates into screen-space pixels."""
@@ -503,7 +516,6 @@ def to_screen(app, point: Tuple[float, float]) -> Tuple[float, float]:
     sy = graph_top + graph_height - sy_fraction * graph_height
     return (sx, sy)
 
-
 def _project_point(app, x: float, y: float, z: float, depth_x: float, depth_y: float) -> Tuple[float, float]:
     """Simple isometric-style projection for the surface preview."""
 
@@ -517,7 +529,6 @@ def _project_point(app, x: float, y: float, z: float, depth_x: float, depth_y: f
     if abs(px) > max_pad_x or abs(py) > max_pad_y:
         raise ValueError("Projected point escaped the drawable area.")
     return (px, py)
-
 
 def draw_adaptive_intervals(app, overlay_only: bool = False) -> None:
     """Visualise the adaptive Simpson intervals as vertical markers."""
