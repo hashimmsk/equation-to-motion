@@ -8,7 +8,6 @@ appears here so that we can adhere to the MVC structure required by
 """
 
 from __future__ import annotations
-
 from dataclasses import dataclass, field
 from typing import Callable, Dict, List, Optional, Tuple
 import ast
