@@ -1,4 +1,4 @@
-# Disk Method Visualizer (MVP-Ready for 15-112)
+# Disk Method Visualizer
 
 interactive cmu_graphics visualizer for the disk method: explore solids of revolution, adjust domains and slice counts, and see riemann-sum volume approximations in real time.
 
@@ -112,19 +112,6 @@ This project combines the immediacy of Desmos sliders, the clarity of 3B1B visua
   - `main.py` (event wiring), `mvp/controller.py`, `mvp/model.py`, `mvp/view.py`.
 - Features implemented so far: curated function set, Riemann animation with video playback, safe custom function entry, adaptive Simpson’s rule, 3D preview, and polished UI elements.
 - Further commits between TP1 and TP2 will focus on stability, documentation, and additional educator-facing overlays.
-
----
-
-## TP2 Update
-The MVP now includes the improvements required for TP2:
-
-- **Custom functions:** press `N` (or click the sidebar button) to type any expression using `sin`, `cos`, `exp`, `sqrt`, etc. The model validates and compiles the expression safely with `ast`, then adds it to the function list with user‑specified bounds.
-- **Video-style playback:** press `V` or “Play video” to run a single 360° rotation that stops automatically at the end—useful for demonstrations without manual timing.
-- **Adaptive integration:** press `A` (or click “Adaptive refine”) to run adaptive Simpson’s rule. The control panel shows the refined volume, the absolute error versus the manual Riemann sum, and the recommended slice count; the adaptive intervals are drawn over the 2D plot. Press `T` to cycle the tolerance, `G` to adopt the suggested slices, and `S` to toggle between disk and shell methods.
-- **Numerical insights:** the info panel now summarises midpoint, trapezoid, Simpson, and adaptive volumes, relative errors, and convergence trends; error bars beside the graph reflect the manual vs. adaptive discrepancy.
-- **UI polish and education:** draggable domain handles, a refreshed palette, 3D shading, and context-sensitive tips help students connect algorithmic behaviour (errors, slice density, method choice) with visual outcomes.
-- **3D surface preview:** press `3` (or the “3D preview” button) to render a pseudo-isometric surface of revolution above the 2D slice view. The highlight follows the active slice so the animation tells a consistent story in both projections.
-- **UI polish:** a status ribbon summarises key shortcuts, the sidebar now has in-app buttons, and a message bar at the bottom communicates parsing errors or workflow hints while remaining within the MVC structure.
 
 ---
 
