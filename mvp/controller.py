@@ -1,18 +1,14 @@
 """
 Controller layer for the cmu_graphics MVP.
-
 Translates user input events from cmu_graphics into calls on the model,
 and coordinates the redraw cycle.
+
 """
 
 from __future__ import annotations
-
 from typing import Optional
-
-from cmu_graphics import rgb  # type: ignore[attr-defined]
-
+from cmu_graphics import rgb
 from . import model
-
 
 def app_started(app) -> None:
     """Initialises global app data and shared layout constants."""
@@ -44,7 +40,6 @@ def app_started(app) -> None:
     }
 
     app.stepsPerSecond = 15
-
 
 def key_pressed(app, event) -> None:
     """Delegates key events to the model."""
@@ -102,9 +97,7 @@ def key_pressed(app, event) -> None:
     elif key == "r":
         model.reset_state(state)
     elif key == "p":
-        # quick snapshot of the current approximation for debugging
         print(f"Current approximate volume: {state.approx_volume:.4f} units^3")
-
 
 def mouse_pressed(app, event) -> None:
     """
@@ -144,28 +137,21 @@ def mouse_pressed(app, event) -> None:
     ):
         focus_index = _index_for_x(app, event.x)
         if focus_index is not None:
-            # jump rotation directly to the clicked slice
             step_fraction = focus_index / max(1, state.slice_count)
             state.rotation_angle = step_fraction * 360
             state.is_animating = True
     else:
         model.toggle_animation(state)
 
-
 def on_mouse_drag(app, mouseX: float, mouseY: float) -> None:
     """Currently a no-op placeholder to satisfy cmu_graphics' drag hook."""
 
-    # Drag-based domain adjustments were removed for TP2 polish, but the main
-    # module still wires up onMouseDrag. Having this stub prevents attribute
-    # errors when cmu_graphics emits drag events.
     _ = (app, mouseX, mouseY)
-
 
 def on_mouse_release(app, event) -> None:
     """No-op placeholder to keep the release hook balanced with on_mouse_drag."""
 
     _ = (app, event)
-
 
 def timer_fired(app) -> None:
     """Keeps the animation advancing smoothly."""
@@ -174,7 +160,6 @@ def timer_fired(app) -> None:
     speed = 5.0 if state.play_mode == "video" else 4.0
     model.tick_animation(state, degrees_per_tick=speed)
 
-
 def redraw_all(app) -> None:
     """Redirects the view call; defined for symmetry."""
 
@@ -182,7 +167,6 @@ def redraw_all(app) -> None:
 
     app.cache.setdefault("buttons", {})
     view.redraw_all(app)
-
 
 def _index_for_x(app, x_pixel: float):
     """Converts a screen x-position into a slice index."""
@@ -194,7 +178,6 @@ def _index_for_x(app, x_pixel: float):
     if not 0 <= relative <= 1:
         return None
     return min(state.slice_count - 1, max(0, int(relative * state.slice_count)))
-
 
 def _key_to_char(key: str) -> Optional[str]:
     """Map cmu_graphics key strings to the characters we allow in text input."""
@@ -215,7 +198,6 @@ def _key_to_char(key: str) -> Optional[str]:
         "backslash": "\\",
     }
     return mapping.get(key)
-
 
 def _button_hit(app, x: float, y: float) -> Optional[str]:
     """Return the identifier of the button under the cursor, if any."""
