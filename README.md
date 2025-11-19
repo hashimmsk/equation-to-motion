@@ -43,40 +43,75 @@ Controls inside the app:
 ## TP1 Proposal
 
 ### Project Description
-**Name:** Manimify Math – Interactive Disk Method MVP  
-**Goal:** Provide calculus learners with an intuitive, interactive way to explore volumes of revolution before introducing automation powered by external services. Users can switch between curated functions, adjust integration bounds, and see both the Riemann slices and the resulting volume approximation update in real time.
+**Name:** Equation-to-Motion — Solids of Revolution Lab  
+**Goal:** Deliver a teaching aid where students *manipulate* solids of revolution inside cmu_graphics. The app highlights how changing a function, domain, or slice density alters the resulting volume, so learners can experiment before attempting formal proofs or hand calculations.
+
+Key experiences:
+- Library of starter functions (quadratic, trig, exponential) with suggested bounds.
+- Custom-expression entry that compiles safely and immediately joins the function carousel.
+- Visual feedback (2D slices + optional 3D mesh) tied to live numerical summaries.
 
 ### Competitive Analysis
-- **Desmos** offers excellent static graphing with sliders but does not emphasise the disk method or provide automated volume estimates.
-- **3Blue1Brown** videos explain the concept beautifully yet are non-interactive and passive.
-- **Manim** scripts (including the legacy version of this project) create stunning animations, but authoring them requires advanced tooling and is non-interactive.
+1. **Desmos / GeoGebra:** both offer rich graphing and sliders, yet neither shows Riemann slices for volumes of revolution nor simulates slice-by-slice animation. Users must compute integrals separately.
+2. **YouTube/3Blue1Brown / Khan Academy:** provide excellent conceptual visuals but remain passive. Students cannot tweak inputs or observe convergence interactively.
+3. **Manim scripts (legacy project):** create cinematic renders, but authoring and re-rendering is slow, code-heavy, and violates the course’s “cmu_graphics only before MVP” rule.
 
-This MVP bridges the gap by combining the immediacy of Desmos with the conceptual clarity of 3B1B, all within a single educational experience that runs locally and remains hands-on.
+This project combines the immediacy of Desmos sliders, the clarity of 3B1B visuals, and the step-by-step perspective of classroom demos—all within an MVC app that runs offline and encourages experimentation.
 
 ### Structural Plan (MVC Overview)
-- **Model (`mvp/model.py`)**: encapsulates application state, selectable functions, integration bounds, slice counts, and disk-method computations.
-- **View (`mvp/view.py`)**: renders axes, the 2D slice view, an optional 3D surface preview, input overlays, and sidebar controls using `cmu_graphics` drawing primitives.
-- **Controller (`mvp/controller.py`)**: translates keyboard/mouse input (including text entry) into model updates, ensuring the view redraws cleanly.
-- **Entry Point (`main.py`)**: wires cmu_graphics callbacks to the controller and launches the event loop.
+- **Entry point (`main.py`):** registers cmu_graphics callbacks (start, redraw, input). Holds no logic besides delegating to the controller.
+- **Controller (`mvp/controller.py`):**
+  - Initializes shared layout/colour constants at `app_started`.
+  - Converts keyboard and mouse events into model function calls.
+  - Maintains a cache of clickable button bounds for the sidebar.
+- **Model (`mvp/model.py`):**
+  - Stores `AppState` (functions, domain, slice count, animation flags, adaptive data).
+  - Parses custom expressions via `ast`, compiles safe callables, and tracks recommended domains.
+  - Implements numerical routines: midpoint Riemann sum, trapezoidal, Simpson, adaptive Simpson, convergence analysis, smart slice distribution, and shell/disk toggles.
+- **View (`mvp/view.py`):**
+  - Draws the background, axes, slices, 3D mesh, overlays, and sidebar widgets.
+  - Uses helper functions for coordinate transforms, shading, and annotation.
+  - Reads only from `app.state`; all mutations happen in the model.
 
 ### Algorithmic Plan
-The main algorithmic component is a **midpoint Riemann sum** that approximates \( V = \int_a^b \pi [f(x)]^2 dx \) for solids of revolution about the x-axis.  
-Implementation details:
-- Sample the function at slice midpoints, guaranteeing stability for non-negative functions.
-- Recompute the volume whenever the user changes the function, domain, or slice count.
-- Maintain a lightweight animation index derived from a rotation angle; this connects the numerical approximation to the highlighted slice for conceptual reinforcement.
-- Safely parse user-defined expressions with Python’s `ast` module, allowing standard math functions while rejecting unsafe constructs.
-- Provide an **adaptive Simpson’s rule** refinement that recursively subdivides the domain until an error tolerance is met, returning both an accurate volume estimate and the subintervals that required higher resolution.
-- Compare **midpoint, trapezoidal, Simpson, and adaptive** volumes to highlight numerical accuracy trade-offs, and visualise convergence behaviour as slices increase.
-- Weight slice placement with a derivative-based heuristic so regions with rapid change receive more sampling density.
+1. **Midpoint Riemann Core**
+   - Divide `[a, b]` into `n` slices.
+   - Evaluate `f` at each midpoint, accumulate \( \pi f(x)^2 \Delta x \).
+   - Cache slice geometry for the animation/highlight logic.
+2. **Custom Function Parsing**
+   - Use `ast.parse` in `eval` mode, recursively validate nodes against a white-list (`+`, `-`, `*`, `/`, `**`, `sin`, `exp`, etc.).
+   - Replace `^` with `**`, forbid `math.` prefix, reject keywords/imports.
+   - Compile to a callable that executes in a sandboxed dictionary.
+3. **Adaptive Simpson’s Rule**
+   - Recursive helper returns `(approximation, error)` for an interval.
+   - Terminate when error < tolerance or recursion limit reached.
+   - Record subinterval depth for visual overlays and slice recommendations.
+4. **Comparison + Recommendations**
+   - Compute midpoint, trapezoid, Simpson, and adaptive results in the model.
+   - Estimate relative error vs. adaptive result; derive a “suggested slice count” by back-solving from the Simpson error model.
+5. **3D Mesh + Smart Slices**
+   - Generate a coarse grid of theta rotations (≤18 steps) and axial samples (≤200) to avoid the cmu_graphics shape limit.
+   - Derivative-based heuristic weights slices toward areas where |f'(x)| is large.
 
 ### Timeline Plan
-- **Week 10:** Finalize function library, MVC scaffolding, and data flow (DONE).
-- **Week 11:** Polish UI/UX details, add instructions, verify algorithm correctness (IN PROGRESS).
-- **Week 12:** Stretch goals (symbol input, saving sessions) if time permits; otherwise, perform robustness testing and documentation.
+| Date | Milestone |
+| --- | --- |
+| **Week 10 (Nov 8–14)** | Confirm final project scope with mentor, stub MVC files, seed function library, basic Riemann computation. |
+| **Week 11 (Nov 15–21)** | Implement custom function flow, sidebar controls, animation loop, and documentation (TP1 deliverable). |
+| **Week 12 (Nov 22–28)** | Add adaptive Simpson’s rule, error indicators, and polish (TP2 MVP). |
+| **Week 13 (Nov 29–Dec 5)** | Stress-test custom expressions, capture demo footage, refine README/controls. |
+| **Week 14 (Dec 6–10)** | Buffer for mentor feedback, bug fixes, and TP3 final touches. |
 
 ### Module List
-- **Currently used:** `cmu_graphics`, `math`, `dataclasses`, standard library helpers.
+- `cmu_graphics==1.1.44` (required by the syllabus; no other graphics modules).
+- Python standard library modules: `math`, `dataclasses`, `typing`, `ast`, `itertools`.
+- **No external APIs, AI services, or additional libraries** before MVP; will revisit only after TP2 with mentor approval.
+
+### Preliminary Code Status
+- Current repository already contains ~1,800 lines of MVC code:
+  - `main.py` (event wiring), `mvp/controller.py`, `mvp/model.py`, `mvp/view.py`.
+- Features implemented so far: curated function set, Riemann animation with video playback, safe custom function entry, adaptive Simpson’s rule, 3D preview, and polished UI elements.
+- Further commits between TP1 and TP2 will focus on stability, documentation, and additional educator-facing overlays.
 
 ---
 
