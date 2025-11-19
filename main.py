@@ -1,8 +1,8 @@
 """
 Entry point for the cmu_graphics-based MVP implementation.
-
 Running this file launches the interactive disk method visualizer that
 complies with the 15-112 term project pre-MVP restrictions.
+
 """
 
 from types import SimpleNamespace
