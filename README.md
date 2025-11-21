@@ -88,6 +88,65 @@ No other dependencies are used in the running code at this time.
 
 ---
 
+## TP1 Proposal
+
+### Project Description
+**Name:** Equation-to-Motion — Solids of Revolution Lab  
+**Goal:** deliver a teaching aid where students manipulate solids of revolution inside cmu_graphics. The prelim build showcases the foundation (preset curves, domain control, disk volumes), while the archived branch contains the expanded toolkit (custom expressions, adaptive methods, 3D preview) ready to return after mentor approval.
+
+Key experiences across phases:
+- **Prelim (current repo):** rotate among curated functions, adjust domains and slices, observe the midpoint disk approximation, and monitor a concise status sidebar.
+- **Post-prelim (archived code):** add safe expression parsing, adaptive Simpson comparison, smart slice distributions, convergence plots, and pseudo-isometric previews—all already implemented but temporarily parked.
+
+### Competitive Analysis
+1. **Desmos / GeoGebra:** rich plotting but no per-slice disk animation or instantaneous volume readouts.
+2. **3Blue1Brown / Khan Academy videos:** intuitive explanations yet non-interactive.
+3. **Legacy Manim scripts:** good visuals yet slow iteration and not permitted before MVP.
+
+This project blends Desmos-style sliders with 3B1B clarity inside a course-compliant cmu_graphics MVC app, letting students iterate quickly without leaving Python.
+
+### Structural Plan (MVC Overview)
+- **Entry point (`main.py`):** registers cmu_graphics callbacks and forwards them to the controller—no extra logic.
+- **Controller (`mvp/controller.py`):**
+  - Initializes layout, colors, and `AppState` during `app_started`.
+  - Routes keyboard/mouse input to model helpers (cycle functions, adjust domain, adjust slices, toggle/reset animation).
+  - Retains drag/release no-ops solely for API completeness.
+- **Model (`mvp/model.py`):**
+  - Defines `AppState` with compact fields (function list, domain, slices, animation flag, angle, volume, status).
+  - Implements all mutations and recomputes the midpoint Riemann sum.
+  - Supplies samples for the view to draw curves and slices.
+- **View (`mvp/view.py`):**
+  - Renders the background, ribbon, axes, slices, curve, and sidebar using cmu_graphics primitives.
+  - Centralizes coordinate transforms so the UI updates smoothly as domains change.
+  - Remains purely read-only with respect to `app.state`.
+
+### Algorithmic Plan
+1. **Midpoint Riemann Core** – complete and powering the current submission.
+2. **Custom Function Parsing** – implemented in the archived branch via `ast` validation; to be reactivated once the prelim review concludes.
+3. **Adaptive Simpson + Convergence Analysis** – likewise archived; produces tolerance-driven recommendations and comparison tables.
+4. **3D Mesh + Smart Slices** – pseudo-isometric mesh with shading plus derivative-weighted slice distribution (both archived).
+
+### Timeline Plan
+| Date | Milestone |
+| --- | --- |
+| **Week 10 (Nov 8–14)** | Confirm scope, build MVC skeleton, seed preset functions, midpoint integration. |
+| **Week 11 (Nov 15–21)** | Deliver trimmed prelim build (current repo state) and align documentation. |
+| **Week 12 (Nov 22–28)** | Restore custom parser, adaptive Simpson workflow, and sidebar controls from archive. |
+| **Week 13 (Nov 29–Dec 5)** | Re-enable 3D preview, smart slice heuristics, convergence overlays, shell mode. |
+| **Week 14 (Dec 6–10)** | Polish UX, gather mentor feedback, finalize TP1+TP2 documentation. |
+
+### Module List
+- `cmu_graphics==1.1.44`
+- Python standard library modules: `math`, `dataclasses`, `typing`
+- Archived branch also relies on `ast`, `itertools`, and `functools` for the advanced planner; they will return with the fuller feature set.
+
+### Preliminary Code Status (Expanded)
+- Current repo holds ~380 LOC to satisfy the prelim requirement.
+- Archived snapshot (see `archive/full-20251121/`) contains the ~1,800 LOC full build with custom parsing, adaptive integration, shell mode, and 3D previews.
+- After mentor sign-off, the plan is to merge the archived modules back in, run targeted tests, and refresh this README again.
+
+---
+
 ## Citations & Acknowledgements
 
 - 3Blue1Brown for clear explanations of solids of revolution.
